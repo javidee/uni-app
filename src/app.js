@@ -8,7 +8,7 @@ export function initApp() {
     <div class="container">
       <header class="header">
         <h1>Task Manager</h1>
-        <p class="subtitle">Simple MVP for future labs</p>
+        <p class="subtitle">Simple MVP for future labs and deploys</p>
         <span class="status-badge">
           ${import.meta.env.VITE_APP_STATUS || 'DEV'}
         </span>
