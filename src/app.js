@@ -1,4 +1,5 @@
 import { getTasks, saveTasks } from './storage.js'
+import { trackEvent } from './analytics.js'
 
 export function initApp() {
   const root = document.querySelector('#app')
@@ -31,6 +32,11 @@ export function initApp() {
       </section>
     </div>
   `
+
+  trackEvent('page_view', {
+    page: 'task_manager',
+    status: import.meta.env.VITE_APP_STATUS || 'DEV',
+  })
 
   const input = document.getElementById('taskInput')
   const addBtn = document.getElementById('addBtn')
@@ -70,7 +76,15 @@ export function initApp() {
     document.querySelectorAll('.complete-btn').forEach((button) => {
       button.addEventListener('click', () => {
         const index = Number(button.dataset.index)
-        tasks[index].completed = !tasks[index].completed
+        const task = tasks[index]
+
+        task.completed = !task.completed
+
+        trackEvent('task_completed', {
+          task_text: task.text,
+          completed: task.completed,
+        })
+
         saveTasks(tasks)
         renderTasks()
       })
@@ -79,6 +93,13 @@ export function initApp() {
     document.querySelectorAll('.delete-btn').forEach((button) => {
       button.addEventListener('click', () => {
         const index = Number(button.dataset.index)
+        const task = tasks[index]
+
+        trackEvent('task_deleted', {
+          task_text: task.text,
+          completed_before_delete: task.completed,
+        })
+
         tasks.splice(index, 1)
         saveTasks(tasks)
         renderTasks()
@@ -90,10 +111,17 @@ export function initApp() {
     const text = input.value.trim()
     if (!text) return
 
-    tasks.push({
+    const newTask = {
       text,
       completed: false,
       createdAt: new Date().toISOString(),
+    }
+
+    tasks.push(newTask)
+
+    trackEvent('task_created', {
+      task_text: newTask.text,
+      created_at: newTask.createdAt,
     })
 
     saveTasks(tasks)
